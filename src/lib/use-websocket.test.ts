@@ -45,8 +45,25 @@ test('readyState changes across readyState transitions', async () => {
   await server.connected;
   expect(result.current.readyState).toEqual(ReadyState.OPEN);
 
+  rerender({
+    initialValue: false
+  });
+
+  await server.closed;
+
+  expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+
+  rerender({ initialValue: true });
+
+  // for some reason, the connecting state is too fast here to show up, just wait for OPEN
+  await waitFor(() => {
+    expect(result.current.readyState).toEqual(ReadyState.OPEN);
+  });
+
+  await server.connected;
+
   server.close();
-  await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+  expect(result.current.readyState).toEqual(ReadyState.CLOSED);
 })
 
 test('a function-promise based url works the same as a string-based url', async () => {
